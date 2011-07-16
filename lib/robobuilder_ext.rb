@@ -24,7 +24,7 @@ class Robobuilder
     def new( device_name = '/dev/ttyS0' )
       retval = orig_new device_name
       # Do some communication to synchronise.
-      3.times { retval.serial_number }
+      3.times { retval.direct false }
       retval
     end
 
@@ -173,6 +173,7 @@ class Robobuilder
     else
       write "\xFF\xE0\xFB\x01\x00\x1A"
     end
+    sleep DELAY
   end
 
   def a
@@ -230,4 +231,148 @@ class Robobuilder
     end
   end
 
+  def rbc(response, *contents)
+    cmd = "\xFF" + contents.pack('C' * contents.size) +
+      [checksum(*contents) & 0x7F].pack('C')
+    puts cmd.unpack('C' * cmd.size).collect { |x| "0x%X" % x }.join ' '
+    result = nil
+    t = 0
+    e = nil
+    while result == nil and t < MAX_CMD_TRIES
+      begin
+        e = nil
+        write cmd
+        result = read(response).unpack 'C' * response
+      rescue Exception => e
+        puts "Recovering from error: #{e.to_s}"
+        flush
+        result = nil
+      end
+      t += 1
+    end
+    raise e unless result
+    result
+  end
+
+  def position_move(id, target, torque)
+    raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
+    raise "target must be in 0 .. 254 (but was #{target})" unless target.between? 0, 254
+    raise "torque must be in 0 .. 4 (but was #{torque})" unless torque.between? 0, 4
+    rbc 2, (torque << 5) | id, target
+  end
+
+  def synchronised_position_move
+  end
+
+  def status_read(id)
+    raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
+    rbc 2, (5 << 5) | id, 0
+  end
+
+  def passive_wck(id)
+    raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
+    rbc 2, (6 << 5) | id, 1 << 4
+  end
+
+  def wheel_wck(id, speed)
+    raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
+    raise "speed must be in -15 .. 15 (but was #{speed})" unless speed.between? -15, 15
+    rbc 2, (6 << 5) | id, ((speed >= 0 ? 3 : 4) << 4) | speed.abs
+  end
+
+  def break_wck
+    rbc 2, (6 << 5) | 31, 2 << 4
+  end
+
+  # baud rate set
+
+  # p, d gain set
+
+  # p, d gain read
+
+  # i gain set
+
+  # i gain read
+
+  # runtime p, d gain set
+
+  # runtime i gain set
+
+  # id set
+
+  def speed_set(id, speed, accel)
+    raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
+    raise "speed must be in 0 .. 30 (but was #{speed})" unless speed.between? 0, 30
+    raise "accel must be in 20 .. 100 (but was #{accel})" unless accel.between? 20, 120
+    rbc 2, (7 << 5) | id, 0x0D, speed, accel
+  end
+
+  def speed_read(id)
+    raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
+    rbc 2, (7 << 5) | id, 0x0E, 0, 0
+  end
+
+  def runtime_speed_set(id, speed, accel)
+    raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
+    raise "speed must be in 0 .. 30 (but was #{speed})" unless speed.between? 0, 30
+    raise "accel must be in 20 .. 100 (but was #{accel})" unless accel.between? 20, 120
+    rbc 2, (7 << 5) | id, 0x17, speed, accel
+  end
+
+  def overload_set(id, overload)
+    raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
+    unless overload.between? 33, 199
+      raise "overload must be in 33 .. 199 (but was #{overload})"
+    end
+    retval = rbc 2, (7 << 5) | id, 0x0F, overload, overload
+    if retval[0] != retval[1]
+      raise "Unexpected return value #{retval.inspect} by overload set"
+    end
+    retval.first
+  end
+
+  def overload_read(id)
+    raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
+    retval = rbc 2, (7 << 5) | id, 0x10, 0, 0
+    if retval[0] != retval[1]
+      raise "Unexpected return value #{retval.inspect} by overload read"
+    end
+    retval.first
+  end
+
+  def boundary_set(id, lower, upper)
+    raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
+    raise "lower must be in 0 .. 30 (but was #{lower})" unless lower.between? 0, 254
+    raise "upper must be in 0 .. 30 (but was #{upper})" unless upper.between? 0, 254
+    rbc 2, (7 << 5) | id, 0x11, lower, upper
+  end
+
+  def boundary_read(id)
+    raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
+    rbc 2, (7 << 5) | id, 0x12, 0, 0
+  end
+
+  # I/O write
+
+  # I/O read
+
+  # motion data write
+
+  # motion data read
+
+  def precision_move(id, target, torque)
+    raise "id must be in 0 .. 253 (but was #{id})" unless id.between? 0, 253
+    raise "target must be in 0 .. 1023 (but was #{target})" unless target.between? 0, 1023
+    raise "torque must be in 0 .. 254 (but was #{torque})" unless torque.between? 0, 254
+    retval = rbc 2, 7 << 5, 0xC8, id, torque, target >> 7, target << 1
+    (retval[0] << 8) | retval[1]
+  end
+
+  def precision_read(id)
+    raise "id must be in 0 .. 253 (but was #{id})" unless id.between? 0, 253
+    retval = rbc 2, 7 << 5, 0xC9, id, id
+    (retval[0] << 7) | (retval[1] >> 1)
+  end
+
 end
+

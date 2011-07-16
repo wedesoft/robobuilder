@@ -251,7 +251,7 @@ VALUE Robobuilder::wrapNew( VALUE rbClass, VALUE rbDevice )
     retVal = Data_Wrap_Struct( rbClass, 0, deleteRubyObject,
                                new RobobuilderPtr( ptr ) );
   } catch ( std::exception &e ) {
-    rb_raise( rb_eRuntimeError, e.what() );
+    rb_raise( rb_eRuntimeError, "%s", e.what() );
   };
   return retVal;
 }
@@ -278,7 +278,7 @@ VALUE Robobuilder::wrapWrite( VALUE rbSelf, VALUE rbData )
     rbRetVal = INT2NUM( (*self)->write( StringValuePtr( rbData ),
                                         RSTRING_LEN( rbData ) ) );
   } catch ( std::exception &e ) {
-    rb_raise( rb_eRuntimeError, e.what() );
+    rb_raise( rb_eRuntimeError, "%s", e.what() );
   };
   return rbRetVal;
 }
@@ -291,7 +291,7 @@ VALUE Robobuilder::wrapRead( VALUE rbSelf, VALUE rbNum )
     string retVal( (*self)->read( NUM2INT( rbNum ) ) );
     rbRetVal = rb_str_new( retVal.c_str(), retVal.length() );
   } catch ( std::exception &e ) {
-    rb_raise( rb_eRuntimeError, e.what() );
+    rb_raise( rb_eRuntimeError, "%s", e.what() );
   };
   return rbRetVal;
 }
@@ -302,7 +302,7 @@ VALUE Robobuilder::wrapFlush( VALUE rbSelf )
     RobobuilderPtr *self; Data_Get_Struct( rbSelf, RobobuilderPtr, self );
     (*self)->flush();
   } catch ( std::exception &e ) {
-    rb_raise( rb_eRuntimeError, e.what() );
+    rb_raise( rb_eRuntimeError, "%s", e.what() );
   };
   return Qnil;
 }
@@ -314,7 +314,7 @@ VALUE Robobuilder::wrapTimeout( VALUE rbSelf )
     RobobuilderPtr *self; Data_Get_Struct( rbSelf, RobobuilderPtr, self );
     rbRetVal = INT2NUM( (*self)->timeout() );
   } catch ( std::exception &e ) {
-    rb_raise( rb_eRuntimeError, e.what() );
+    rb_raise( rb_eRuntimeError, "%s", e.what() );
   };
   return rbRetVal;
 }
@@ -325,7 +325,7 @@ VALUE Robobuilder::wrapSetTimeout( VALUE rbSelf, VALUE rbValue )
     RobobuilderPtr *self; Data_Get_Struct( rbSelf, RobobuilderPtr, self );
     (*self)->setTimeout( NUM2INT( rbValue ) );
   } catch ( std::exception &e ) {
-    rb_raise( rb_eRuntimeError, e.what() );
+    rb_raise( rb_eRuntimeError, "%s", e.what() );
   };
   return rbValue;
 }
