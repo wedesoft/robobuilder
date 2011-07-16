@@ -36,9 +36,6 @@ You can load the Ruby extension like this:
 
 See documentation of {Robobuilder} on how to use this Ruby extension.
 
-See Also
------
-
 External Links
 --------------
 
