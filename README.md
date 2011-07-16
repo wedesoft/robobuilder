@@ -36,3 +36,12 @@ You can load the Ruby extension like this:
 
 See documentation of {Robobuilder} on how to use this Ruby extension.
 
+See Also
+-----
+
+External Links
+--------------
+
+* [Robobuilder](http://www.robobuilder.net/eng/)
+* [Page at Robosavvy](http://robosavvy.com/site/index.php?task=view&Itemid=128)
+
