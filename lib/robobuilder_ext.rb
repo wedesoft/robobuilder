@@ -234,7 +234,7 @@ class Robobuilder
   def rbc(response, *contents)
     cmd = "\xFF" + contents.pack('C' * contents.size) +
       [checksum(*contents) & 0x7F].pack('C')
-    puts cmd.unpack('C' * cmd.size).collect { |x| "0x%X" % x }.join ' '
+    #puts cmd.unpack('C' * cmd.size).collect { |x| "0x%X" % x }.join ' '
     result = nil
     t = 0
     e = nil
@@ -342,8 +342,8 @@ class Robobuilder
 
   def boundary_set(id, lower, upper)
     raise "id must be in 0 .. 30 (but was #{id})" unless id.between? 0, 30
-    raise "lower must be in 0 .. 30 (but was #{lower})" unless lower.between? 0, 254
-    raise "upper must be in 0 .. 30 (but was #{upper})" unless upper.between? 0, 254
+    raise "lower must be in 0 .. 254 (but was #{lower})" unless lower.between? 0, 254
+    raise "upper must be in 0 .. 254 (but was #{upper})" unless upper.between? 0, 254
     rbc 2, (7 << 5) | id, 0x11, lower, upper
   end
 
@@ -365,7 +365,7 @@ class Robobuilder
     raise "target must be in 0 .. 1023 (but was #{target})" unless target.between? 0, 1023
     raise "torque must be in 0 .. 254 (but was #{torque})" unless torque.between? 0, 254
     retval = rbc 2, 7 << 5, 0xC8, id, torque, target >> 7, target << 1
-    (retval[0] << 8) | retval[1]
+    (retval[0] << 7) | (retval[1] >> 1)
   end
 
   def precision_read(id)
