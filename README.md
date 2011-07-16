@@ -1,21 +1,21 @@
-malloc
+robobuilder
 ======
 
 **Author**:       Jan Wedekind
-**Copyright**:    2010
+**Copyright**:    2011
 **License**:      GPL
 
 Synopsis
 --------
 
-This Ruby extension defines the class {Hornetseye::Malloc}. {Hornetseye::Malloc.new} allows you to allocate memory, using {Hornetseye::Malloc#+} one can do pointer manipulation, and {Hornetseye::Malloc#read} and {Hornetseye::Malloc#write} provide reading Ruby strings from memory and writing Ruby strings to memory.
+This Ruby extension defines the class {Robobuilder} for communicating with a Robobuilder robot via serial port or Bluetooth serial.
 
 Installation
 ------------
 
 To install this Ruby extension, use the following command:
 
-    $ sudo gem install malloc
+    $ sudo gem install robobuilder
 
 Alternatively you can build and install the Ruby extension from source as follows:
 
@@ -32,8 +32,7 @@ Simply run Interactive Ruby:
 You can load the Ruby extension like this:
 
     require 'rubygems'
-    require 'malloc'
-    include Hornetseye
+    require 'robobuilder'
 
-See documentation of {Hornetseye::Malloc} on how to use this Ruby extension.
+See documentation of {Robobuilder} on how to use this Ruby extension.
 
