@@ -24,7 +24,7 @@ class Robobuilder
     def new( device_name = '/dev/ttyS0' )
       retval = orig_new device_name
       # Do some communication to synchronise.
-      3.times { retval.direct false }
+      3.times { retval.write "\xFF\xE0\xFB\x01\x00\x1A" }
       retval
     end
 
@@ -280,7 +280,7 @@ class Robobuilder
     rbc 2, (6 << 5) | id, ((speed >= 0 ? 3 : 4) << 4) | speed.abs
   end
 
-  def break_wck
+  def brake_wck
     rbc 2, (6 << 5) | 31, 2 << 4
   end
 
@@ -364,14 +364,14 @@ class Robobuilder
     raise "id must be in 0 .. 253 (but was #{id})" unless id.between? 0, 253
     raise "target must be in 0 .. 1023 (but was #{target})" unless target.between? 0, 1023
     raise "torque must be in 0 .. 254 (but was #{torque})" unless torque.between? 0, 254
-    retval = rbc 2, 7 << 5, 0xC8, id, torque, target >> 7, target << 1
-    (retval[0] << 7) | (retval[1] >> 1)
+    retval = rbc 2, 7 << 5, 0xC8, id, torque, target >> 6, (target << 1) & 0x7E
+    (retval[0] << 6) | (retval[1] >> 1)
   end
 
   def precision_read(id)
     raise "id must be in 0 .. 253 (but was #{id})" unless id.between? 0, 253
     retval = rbc 2, 7 << 5, 0xC9, id, id
-    (retval[0] << 7) | (retval[1] >> 1)
+    (retval[0] << 6) | (retval[1] >> 1)
   end
 
 end
