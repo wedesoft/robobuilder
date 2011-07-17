@@ -24,7 +24,7 @@ class Robobuilder
     def new( device_name = '/dev/ttyS0' )
       retval = orig_new device_name
       # Do some communication to synchronise.
-      3.times { retval.write "\xFF\xE0\xFB\x01\x00\x1A" }
+      3.times { retval.serial_number }
       retval
     end
 
